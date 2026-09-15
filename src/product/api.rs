@@ -1,5 +1,5 @@
 use crate::{
-    AppState, model::{NewProduct, Product, UpdateProduct}, product::handler::{delete_product_db, handle_product_insertion, handle_products, update_product_db},
+    AppState, model::{NewProduct, Product, UpdateProduct}, product::handler::{delete_product_db, handle_product_insertion, handle_product,handle_products, update_product_db},
 };
 use axum::{Json, extract::{State,Path}, http::StatusCode};
 
@@ -8,6 +8,7 @@ pub async fn create_part(
     State(state): State<AppState>,
     Json(payload): Json<NewProduct>,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
+    
     let connection = state
         .db_pool
         .get()
@@ -41,7 +42,7 @@ pub async fn get_products(State(state): State<AppState>) -> Result<Json<Vec<Prod
         .expect("Failed to get DB connection from pool");
 
     let result = connection
-        .interact(move |connection| handle_products(connection,None))
+        .interact(move |connection| handle_products(connection))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 
@@ -53,7 +54,7 @@ pub async fn get_products(State(state): State<AppState>) -> Result<Json<Vec<Prod
 }
 
 #[axum::debug_handler]
-pub async fn get_product(State(state): State<AppState>, Json(payload): Json<i32>) -> Result<Json<Vec<Product>>, String> {
+pub async fn get_product(State(state): State<AppState>, Json(payload): Json<i32>) -> Result<Json<Product>, String> {
     let connection = state
         .db_pool
         .get()
@@ -61,7 +62,7 @@ pub async fn get_product(State(state): State<AppState>, Json(payload): Json<i32>
         .expect("Failed to get DB connection from pool");
 
     let result = connection
-        .interact(move |connection| handle_products(connection,Some(payload)))
+        .interact(move |connection| handle_product(connection,payload))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 

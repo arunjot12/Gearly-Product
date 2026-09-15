@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Queryable, Selectable,Serialize, Deserialize, Insertable)]
-#[diesel(table_name = crate::schema::product)]
+#[diesel(table_name = crate::schema::products)]
 pub struct NewProduct{
      pub name: String,
      pub price: i32,
@@ -12,7 +12,7 @@ pub struct NewProduct{
 }
 
 #[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = crate::schema::product)]
+#[diesel(table_name = crate::schema::products)]
 pub struct Product {
      pub id: i32,
      pub name: String,

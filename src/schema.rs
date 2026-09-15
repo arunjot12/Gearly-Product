@@ -1,7 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    product (id) {
+    products (id) {
         id -> Integer,
         #[max_length = 255]
         name -> Varchar,
@@ -16,10 +16,12 @@ diesel::table! {
 }
 
 diesel::table! {
-    signup_shopkeepers (id) {
+    shopkeepers (id) {
         id -> Integer,
         #[max_length = 255]
         first_name -> Nullable<Varchar>,
+        #[max_length = 255]
+        last_name -> Varchar,
         #[max_length = 255]
         username -> Nullable<Varchar>,
         #[max_length = 255]
@@ -45,6 +47,8 @@ diesel::table! {
         #[max_length = 255]
         first_name -> Nullable<Varchar>,
         #[max_length = 255]
+        last_name -> Varchar,
+        #[max_length = 255]
         username -> Nullable<Varchar>,
         #[max_length = 255]
         email -> Nullable<Varchar>,
@@ -57,4 +61,4 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(product, signup_shopkeepers, users,);
+diesel::allow_tables_to_appear_in_same_query!(products, shopkeepers, users,);

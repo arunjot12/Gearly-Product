@@ -1,6 +1,6 @@
 use crate::{
     model::{NewProduct, UpdateProduct,Product},
-    schema::product,
+    schema::products,
 };
 use axum::Json;
 use diesel::{
@@ -42,19 +42,22 @@ pub fn handle_product_insertion(
 }
 pub fn handle_products(
     connection: &mut MysqlConnection,
-    product_id: Option<i32>,
 ) -> Result<Json<Vec<Product>>, String> {
-    let products = match product_id {
-        Some(id) => product::table
+    let products = product::table
             .select(Product::as_select())
-            .filter(product::id.eq(id))
-            .load::<Product>(connection),
+            .load::<Product>(connection).map_err(|e| e.to_string())?;
+    Ok(Json(products))
+}
 
-        None => product::table
+pub fn handle_product(
+    connection: &mut MysqlConnection,
+    product_id: i32,
+) -> Result<Json<Product>, String> {
+    let products = 
+       product::table
             .select(Product::as_select())
-            .load::<Product>(connection),
-    }
-    .map_err(|e| e.to_string())?;
+            .filter(product::id.eq(product_id))
+            .first::<Product>(connection).map_err(|e| e.to_string())?;
 
     Ok(Json(products))
 }
