@@ -1,12 +1,16 @@
 use crate::{
-    AppState, model::{NewProduct, Product, UpdateProduct}, product::handler::{delete_product_db, handle_product_insertion, handle_product,handle_products, update_product_db},
+    AppState,
+     model::{NewProduct, NewProductRequest, Product, UpdateProduct},
+    product::handler::{delete_product_db, handle_product, handle_product_insertion, handle_products, update_product_db},
+      auth::auth::Claims,
 };
-use axum::{Json, extract::{State,Path}, http::StatusCode};
+use axum::{Json, Extension,extract::{State,Path}, http::StatusCode};
 
 #[axum::debug_handler]
 pub async fn create_part(
     State(state): State<AppState>,
-    Json(payload): Json<NewProduct>,
+     Extension(claims): Extension<Claims>,
+    Json(payload): Json<NewProductRequest>,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
     
     let connection = state
@@ -18,6 +22,14 @@ pub async fn create_part(
     if payload.price <= 0 {
         return Err((StatusCode::BAD_REQUEST, "Add a valid price".to_string()));
     }
+
+    let payload = NewProduct {
+    name: payload.name,
+    price: payload.price,
+    descri: payload.descri,
+    part_number: payload.part_number,
+    shopkeeper_id: claims.sub,
+    };
 
     let result = connection
         .interact(move |connection| handle_product_insertion(connection, payload))

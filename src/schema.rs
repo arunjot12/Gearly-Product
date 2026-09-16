@@ -12,7 +12,7 @@ diesel::table! {
         part_number -> Varchar,
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
-        shopkeeper_id -> Nullable<Integer>,
+        shopkeeper_id -> Integer,
     }
 }
 

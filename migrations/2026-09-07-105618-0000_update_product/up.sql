@@ -1,3 +1,0 @@
--- Your SQL goes here
-ALTER TABLE product
-MODIFY COLUMN id INT NOT NULL AUTO_INCREMENT;

@@ -40,4 +40,5 @@ impl JwtService {
         let token_data = decode::<Claims>(token, &self.decoding_key, &validation)?;
         Ok(token_data.claims)
     }
+
 }
