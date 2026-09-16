@@ -9,15 +9,13 @@ pub mod auth;
 pub mod db;
 use serde_json::{json,Value};
 pub mod model;
+pub mod cors;
 pub mod product;
 pub mod schema;
 use crate::{
-    auth::{auth::JwtService, middleware::auth_middleware},
-    db::{DbPool, create_pool},
-    product::api::{create_part, delete_product, get_product, get_products, update_product},
+    auth::{auth::JwtService, middleware::auth_middleware}, cors::cors_allow, db::{DbPool, create_pool}, product::api::{create_part, delete_product, get_product, get_products, update_product},
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
 
 #[derive(Clone)]
 pub struct AppState {
@@ -53,6 +51,7 @@ async fn main() {
             state.clone(),
             auth_middleware,
         ))
+        .layer(cors_allow())
         .with_state(state);
 
     let port: u16 = std::env::var("PORT")
