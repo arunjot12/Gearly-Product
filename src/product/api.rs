@@ -38,7 +38,7 @@ pub async fn create_part(
     };
 
     let result = connection
-        .interact(move |connection| handle_product_insertion(connection, payload))
+        .interact(move |connection| handle_product_insertion(connection, payload, &claims.sub))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -82,7 +82,7 @@ pub async fn get_products(
 pub async fn get_product(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
-    Json(payload): Json<i32>,
+    Path(product_id): Path<i32>,
 ) -> Result<Json<Product>, String> {
     let connection = state
         .db_pool
@@ -91,7 +91,7 @@ pub async fn get_product(
         .expect("Failed to get DB connection from pool");
 
     let result = connection
-        .interact(move |connection| handle_product(connection, payload, &claims.sub))
+        .interact(move |connection| handle_product(connection, product_id, &claims.sub))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 
@@ -109,7 +109,7 @@ pub async fn get_product(
 pub async fn delete_product(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
-    Json(payload): Json<i32>,
+    Path(payload): Path<i32>,
 ) -> Result<StatusCode, (StatusCode, String)> {
     
     let connection = state.db_pool.get().await.map_err(|error| {

@@ -41,11 +41,10 @@ async fn main() {
     };
     let app = Router::new()
         .route("/create_product", post(create_part))
-        .route("/get_product", get(get_product))
         .route("/get_products", get(get_products))
         .route("/get_product/:id", get(get_product))
         .route("/health",get(health_check))
-        .route("/delete_product", post(delete_product))
+        .route("/delete_product/:id", post(delete_product))
         .route("/update_product/:id", put(update_product))
         .layer(middleware::from_fn_with_state(
             state.clone(),

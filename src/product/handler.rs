@@ -20,9 +20,11 @@ pub enum AppError {
 pub fn handle_product_insertion(
     connection: &mut MysqlConnection,
     part: NewProduct,
+    claims: &i32
 ) -> Result<String, AppError> {
     let check = products::table
         .select(Product::as_select())
+         .filter(products::shopkeeper_id.eq(claims))
         .filter(products::part_number.eq(&part.part_number))
         .first(connection)
         .optional();
