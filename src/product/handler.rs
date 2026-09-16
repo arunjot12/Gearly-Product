@@ -70,9 +70,12 @@ pub fn handle_product(
 pub fn delete_product_db(
     connection: &mut MysqlConnection,
     product_id: i32,
+    claims: &i32
 ) -> QueryResult<usize> {
     diesel::delete(
-        products::table.filter(products::id.eq(product_id)),
+        products::table
+        .filter(products::shopkeeper_id.eq(claims))
+        .filter(products::id.eq(product_id)),
     )
     .execute(connection)
 }

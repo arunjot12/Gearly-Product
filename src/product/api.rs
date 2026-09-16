@@ -103,6 +103,7 @@ pub async fn get_product(
 #[axum::debug_handler]
 pub async fn delete_product(
     State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<i32>,
 ) -> Result<StatusCode, (StatusCode, String)> {
     let connection = state
@@ -112,7 +113,7 @@ pub async fn delete_product(
         .expect("Failed to get DB connection from pool");
 
     let result = connection
-        .interact(move |connection| delete_product_db(connection, payload))
+        .interact(move |connection| delete_product_db(connection, payload,&claims.sub))
         .await
         .map_err(|e| {
             (
