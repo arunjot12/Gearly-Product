@@ -61,8 +61,34 @@ async fn main() {
     let listener = TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
         .unwrap_or_else(|e| panic!("failed to bind to port {port}: {e}"));
+    tracing::info!(port, "🚀 server listening");
+    print_startup_info(port);
 
     serve(listener, app).await.unwrap();
+}
+
+pub fn print_startup_info(port: u16) {
+    println!();
+    println!("╔══════════════════════════════════════════════════════════╗");
+    println!("║                 📦  GEARLY PRODUCT API                   ║");
+    println!("║           Car Parts Marketplace Product Backend          ║");
+    println!("╚══════════════════════════════════════════════════════════╝");
+    println!();
+    println!("  ✓ Database       Connected");
+    println!("  ✓ JWT            Initialized");
+    println!("  ✓ Server         Ready");
+    println!();
+    println!("  Routes");
+    println!("  ────────────────────────────────────────────────────────");
+    println!("  POST   /create_product");
+    println!("  GET    /get_products");
+    println!("  GET    /get_product/:id");
+    println!("  PUT    /update_product/:id");
+    println!("  POST   /delete_product");
+    println!("  GET    /health");
+    println!();
+    println!("  🚀 Server running at http://127.0.0.1:{}", port);
+    println!();
 }
 
 #[axum::debug_handler]
