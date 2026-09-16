@@ -30,7 +30,8 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let jwt = std::env::var("JwtService").expect("JWT secret needs to set");
+    dotenv::dotenv().ok();
+    let jwt = std::env::var("JWT_SECRET").expect("JWT secret needs to set");
 
     let jwt_service = JwtService::new(&jwt);
     let pool = create_pool();

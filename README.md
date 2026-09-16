@@ -6,7 +6,7 @@ This is the product microservice for Gearly.
 
 - **Framework**: Rust with Axum and Tokio.
 - **Database**: MySQL using Diesel ORM and deadpool-diesel for connection pooling.
-- **Authentication**: JWT-based authentication middleware is implemented and applied to routes.
+- **Authentication**: JWT-based authentication middleware is implemented and applied to routes
 - **Observability**: Added `tracing` for structured logging.
 - **CORS**: Configured cross-origin requests using `tower-http`.
 
