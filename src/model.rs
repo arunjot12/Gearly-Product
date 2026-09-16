@@ -32,7 +32,14 @@ pub struct Product {
      pub created_at: Option<NaiveDateTime>,
      pub updated_at: Option<NaiveDateTime>,
      pub shopkeeper_id: i32
+}
 
+#[derive(Deserialize)]
+pub struct UpdateProductRequest {
+    pub name: String,
+    pub price: i32,
+    pub descri: String,
+    pub part_number: String,
 }
 
 #[derive(Deserialize)]

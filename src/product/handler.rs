@@ -43,9 +43,11 @@ pub fn handle_product_insertion(
 
 pub fn handle_products(
     connection: &mut MysqlConnection,
+    claims: &i32
 ) -> Result<Json<Vec<Product>>, String> {
     let products = products::table
             .select(Product::as_select())
+            .filter(products::shopkeeper_id.eq(claims))
             .load::<Product>(connection).map_err(|e| e.to_string())?;
     Ok(Json(products))
 }
@@ -53,11 +55,13 @@ pub fn handle_products(
 pub fn handle_product(
     connection: &mut MysqlConnection,
     product_id: i32,
+    claims: &i32
 ) -> Result<Json<Product>, String> {
     let products = 
        products::table
             .select(Product::as_select())
             .filter(products::id.eq(product_id))
+            .filter(products::shopkeeper_id.eq(claims))
             .first::<Product>(connection).map_err(|e| e.to_string())?;
 
     Ok(Json(products))
@@ -77,8 +81,11 @@ pub fn update_product_db(
     connection: &mut MysqlConnection,
     product_id: &i32,
     payload: UpdateProduct,
+    claims: &i32
 ) -> QueryResult<usize> {
-    diesel::update(products::table.filter(products::id.eq(product_id)))
+    diesel::update(products::table
+        .filter(products::shopkeeper_id.eq(claims))
+        .filter(products::id.eq(product_id)))
         .set((
             products::name.eq(payload.name),
             products::price.eq(payload.price),
