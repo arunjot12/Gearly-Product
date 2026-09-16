@@ -2,10 +2,12 @@ use axum::{
     Router, middleware,
     routing::{get, post, put},
     serve,
+    Json
 };
 use tokio::net::TcpListener;
 pub mod auth;
 pub mod db;
+use serde_json::{json,Value};
 pub mod model;
 pub mod product;
 pub mod schema;
@@ -44,6 +46,7 @@ async fn main() {
         .route("/get_product", get(get_product))
         .route("/get_products", get(get_products))
         .route("/get_product/:id", get(get_product))
+        .route("/health",get(health_check))
         .route("/delete_product", post(delete_product))
         .route("/update_product/:id", put(update_product))
         .layer(middleware::from_fn_with_state(
@@ -62,4 +65,12 @@ async fn main() {
         .unwrap_or_else(|e| panic!("failed to bind to port {port}: {e}"));
 
     serve(listener, app).await.unwrap();
+}
+
+#[axum::debug_handler]
+pub async fn health_check() -> Json<Value> {
+    Json(json!({
+        "status": "ready"
+    }
+    ))
 }
