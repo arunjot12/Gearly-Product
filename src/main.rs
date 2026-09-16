@@ -14,6 +14,8 @@ use crate::{
     db::{DbPool, create_pool},
     product::api::{create_part, delete_product, get_product, get_products, update_product},
 };
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
 
 #[derive(Clone)]
 pub struct AppState {
@@ -23,6 +25,11 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
+     tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
     let jwt = std::env::var("JwtService").expect("JWT secret needs to set");
 
     let jwt_service = JwtService::new(&jwt);

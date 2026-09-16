@@ -12,6 +12,7 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
+use tokio::sync::broadcast::error;
 
 #[axum::debug_handler]
 pub async fn create_part(
@@ -69,11 +70,10 @@ pub async fn get_products(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 
-    let result = match result {
+     match result {
         Ok(result) => result,
-        Err(e) => return Err("BAD_REQUEST".to_string()),
-    };
-    result
+        Err(e) =>  Err("BAD_REQUEST".to_string()),
+    }
 }
 
 #[axum::debug_handler]
@@ -82,22 +82,21 @@ pub async fn get_product(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<i32>,
 ) -> Result<Json<Product>, String> {
-    let connection = state
-        .db_pool
-        .get()
-        .await
-        .expect("Failed to get DB connection from pool");
+    let connection = state.db_pool.get().await.map_err(|error| {
+    tracing::error!(?error, "Failed to obtain database connection");
+    ( StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
+  })?;
 
     let result = connection
         .interact(move |connection| handle_product(connection, payload, &claims.sub))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 
-    let result = match result {
+     match result {
         Ok(result) => result,
-        Err(e) => return Err("BAD_REQUEST".to_string()),
-    };
-    result
+        Err(e) => Err("BAD_REQUEST".to_string()),
+    }
+    
 }
 
 #[axum::debug_handler]
@@ -106,11 +105,11 @@ pub async fn delete_product(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<i32>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let connection = state
-        .db_pool
-        .get()
-        .await
-        .expect("Failed to get DB connection from pool");
+
+    let connection = state.db_pool.get().await.map_err(|error| {
+    tracing::error!(?error, "Failed to obtain database connection");
+    ( StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
+  })?;
 
     let result = connection
         .interact(move |connection| delete_product_db(connection, payload,&claims.sub))
@@ -142,11 +141,11 @@ pub async fn update_product(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<UpdateProductRequest>,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
-    let connection = state
-        .db_pool
-        .get()
-        .await
-        .expect("Failed to get DB connection from pool");
+
+   let connection = state.db_pool.get().await.map_err(|error| {
+    tracing::error!(?error, "Failed to obtain database connection");
+    ( StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
+  })?;
 
     let claims = claims.sub;
 

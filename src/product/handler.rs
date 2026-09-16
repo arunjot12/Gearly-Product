@@ -37,7 +37,7 @@ pub fn handle_product_insertion(
 
     match insert_into {
         Ok(_) => Ok(" Everything is done bro".to_string()),
-        Err(e) => return Err(AppError::Database(e)),
+        Err(e) => Err(AppError::Database(e)),
     }
 }
 
