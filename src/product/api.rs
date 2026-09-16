@@ -12,7 +12,6 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use tokio::sync::broadcast::error;
 
 #[axum::debug_handler]
 pub async fn create_part(
@@ -72,7 +71,10 @@ pub async fn get_products(
 
      match result {
         Ok(result) => result,
-        Err(e) =>  Err("BAD_REQUEST".to_string()),
+        Err(e) =>  {
+            tracing::error!("Product is failed to fetch {:?}",e);
+            Err("BAD_REQUEST".to_string())
+        },
     }
 }
 
@@ -82,10 +84,11 @@ pub async fn get_product(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<i32>,
 ) -> Result<Json<Product>, String> {
-    let connection = state.db_pool.get().await.map_err(|error| {
-    tracing::error!(?error, "Failed to obtain database connection");
-    ( StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
-  })?;
+    let connection = state
+        .db_pool
+        .get()
+        .await
+        .expect("Failed to get DB connection from pool");
 
     let result = connection
         .interact(move |connection| handle_product(connection, payload, &claims.sub))
@@ -94,7 +97,10 @@ pub async fn get_product(
 
      match result {
         Ok(result) => result,
-        Err(e) => Err("BAD_REQUEST".to_string()),
+       Err(e) => {
+        tracing::error!(?e, "Product operation failed");
+        Err("BAD_REQUEST".to_string())
+        }
     }
     
 }
@@ -105,7 +111,7 @@ pub async fn delete_product(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<i32>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-
+    
     let connection = state.db_pool.get().await.map_err(|error| {
     tracing::error!(?error, "Failed to obtain database connection");
     ( StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
