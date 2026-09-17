@@ -45,11 +45,15 @@ pub fn handle_product_insertion(
 
 pub fn handle_products(
     connection: &mut MysqlConnection,
-    claims: &i32
+    claims: &i32,
+    limit: i64,
+    offset: i64,
 ) -> Result<Json<Vec<Product>>, String> {
     let products = products::table
             .select(Product::as_select())
             .filter(products::shopkeeper_id.eq(claims))
+             .limit(limit)
+            .offset(offset)
             .load::<Product>(connection).map_err(|e| e.to_string())?;
     Ok(Json(products))
 }
@@ -58,15 +62,11 @@ pub fn handle_product(
     connection: &mut MysqlConnection,
     product_id: i32,
     claims: &i32,
-    limit: i64,
-    offset: i64,
 ) -> Result<Json<Product>, String> {
     let products = 
        products::table
             .select(Product::as_select())
             .filter(products::id.eq(product_id))
-            .limit(limit)
-            .offset(offset)
             .filter(products::shopkeeper_id.eq(claims))
             .first::<Product>(connection).map_err(|e| e.to_string())?;
 

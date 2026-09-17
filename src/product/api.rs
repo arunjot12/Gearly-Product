@@ -54,6 +54,7 @@ pub async fn create_part(
 pub async fn get_products(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
+    Query(pages): Query<Pagination>
 ) -> Result<Json<Vec<Product>>, String> {
     let connection = state
         .db_pool
@@ -64,7 +65,7 @@ pub async fn get_products(
     let claims = claims.sub;
 
     let result = connection
-        .interact(move |connection| handle_products(connection, &claims))
+        .interact(move |connection| handle_products(connection, &claims,pages.limit,pages.offset))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 
@@ -82,7 +83,6 @@ pub async fn get_product(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
     Path(product_id): Path<i32>,
-    Query(pages): Query<Pagination>
 ) -> Result<Json<Product>, String> {
         let connection = state
         .db_pool
@@ -91,7 +91,7 @@ pub async fn get_product(
         .expect("Failed to get DB connection from pool");
 
     let result = connection
-        .interact(move |connection| handle_product(connection, product_id, &claims.sub,pages.limit,pages.offset))
+        .interact(move |connection| handle_product(connection, product_id, &claims.sub))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 
