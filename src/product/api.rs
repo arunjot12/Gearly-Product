@@ -29,6 +29,10 @@ pub async fn create_part(
         return Err((StatusCode::BAD_REQUEST, "Add a valid price".to_string()));
     }
 
+    if claims.roles != "shopkeeper" {
+       return Err((StatusCode::FORBIDDEN, "Only shopkeepers can manage parts".into()));
+    }
+
     let payload = NewProduct {
         name: payload.name,
         price: payload.price,
