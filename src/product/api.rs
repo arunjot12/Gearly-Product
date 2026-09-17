@@ -1,16 +1,11 @@
 use crate::{
-    AppState,
-    auth::auth::Claims,
-    model::{NewProduct, NewProductRequest, Product, UpdateProduct, UpdateProductRequest},
-    product::handler::{
+    AppState, Pagination, auth::auth::Claims, model::{NewProduct, NewProductRequest, Product, UpdateProduct, UpdateProductRequest}, product::handler::{
         delete_product_db, handle_product, handle_product_insertion, handle_products,
         update_product_db,
     },
 };
 use axum::{
-    Extension, Json,
-    extract::{Path, State},
-    http::StatusCode,
+    Extension, Json, extract::{Path, Query, State}, http::StatusCode,
 };
 
 #[axum::debug_handler]
@@ -87,6 +82,7 @@ pub async fn get_product(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
     Path(product_id): Path<i32>,
+    Query(pages): Query<Pagination>
 ) -> Result<Json<Product>, String> {
         let connection = state
         .db_pool
@@ -95,7 +91,7 @@ pub async fn get_product(
         .expect("Failed to get DB connection from pool");
 
     let result = connection
-        .interact(move |connection| handle_product(connection, product_id, &claims.sub))
+        .interact(move |connection| handle_product(connection, product_id, &claims.sub,pages.limit,pages.offset))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 

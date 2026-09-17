@@ -57,12 +57,16 @@ pub fn handle_products(
 pub fn handle_product(
     connection: &mut MysqlConnection,
     product_id: i32,
-    claims: &i32
+    claims: &i32,
+    limit: i64,
+    offset: i64,
 ) -> Result<Json<Product>, String> {
     let products = 
        products::table
             .select(Product::as_select())
             .filter(products::id.eq(product_id))
+            .limit(limit)
+            .offset(offset)
             .filter(products::shopkeeper_id.eq(claims))
             .first::<Product>(connection).map_err(|e| e.to_string())?;
 

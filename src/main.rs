@@ -23,6 +23,12 @@ pub struct AppState {
     jwt_service: JwtService,
 }
 
+#[derive(serde::Deserialize)]
+pub struct Pagination{
+    limit: i64,
+    offset: i64
+}
+
 #[tokio::main]
 async fn main() {
      tracing_subscriber::registry()
