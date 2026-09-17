@@ -1,11 +1,17 @@
 use crate::{
-    db::AppState, db::Pagination, auth::auth::Claims, model::{NewProduct, NewProductRequest, Product, UpdateProduct, UpdateProductRequest}, product::handler::{
+    auth::auth::Claims,
+    db::AppState,
+    db::Pagination,
+    model::{NewProduct, NewProductRequest, Product, UpdateProduct, UpdateProductRequest},
+    product::handler::{
         delete_product_db, handle_product, handle_product_insertion, handle_products,
-        update_product_db,
+        handle_public_products, update_product_db,
     },
 };
 use axum::{
-    Extension, Json, extract::{Path, Query, State}, http::StatusCode,
+    Extension, Json,
+    extract::{Path, Query, State},
+    http::StatusCode,
 };
 
 #[axum::debug_handler]
@@ -25,7 +31,10 @@ pub async fn create_part(
     }
 
     if claims.roles != "shopkeeper" {
-       return Err((StatusCode::FORBIDDEN, "Only shopkeepers can manage parts".into()));
+        return Err((
+            StatusCode::FORBIDDEN,
+            "Only shopkeepers can manage parts".into(),
+        ));
     }
 
     let payload = NewProduct {
@@ -54,7 +63,7 @@ pub async fn create_part(
 pub async fn get_products(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
-    Query(pages): Query<Pagination>
+    Query(pages): Query<Pagination>,
 ) -> Result<Json<Vec<Product>>, String> {
     let connection = state
         .db_pool
@@ -65,7 +74,7 @@ pub async fn get_products(
     let claims = claims.sub;
 
     let result = connection
-        .interact(move |connection| handle_products(connection, &claims,pages.limit,pages.offset))
+        .interact(move |connection| handle_products(connection, &claims, pages.limit, pages.offset))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 
@@ -84,7 +93,7 @@ pub async fn get_product(
     Extension(claims): Extension<Claims>,
     Path(product_id): Path<i32>,
 ) -> Result<Json<Product>, String> {
-        let connection = state
+    let connection = state
         .db_pool
         .get()
         .await
@@ -117,6 +126,13 @@ pub async fn delete_product(
             "Internal server error".to_string(),
         )
     })?;
+
+    if claims.roles != "shopkeeper" {
+        return Err((
+            StatusCode::FORBIDDEN,
+            "Only shopkeepers can manage parts".into(),
+        ));
+    }
 
     let result = connection
         .interact(move |connection| delete_product_db(connection, payload, &claims.sub))
@@ -156,18 +172,25 @@ pub async fn update_product(
         )
     })?;
 
-    let claims = claims.sub;
+    if claims.roles != "shopkeeper" {
+        return Err((
+            StatusCode::FORBIDDEN,
+            "Only shopkeepers can manage parts".into(),
+        ));
+    }
 
     let payload = UpdateProduct {
         name: payload.name,
         price: payload.price,
         descri: payload.descri,
         part_number: payload.part_number,
-        shopkeeper_id: claims,
+        shopkeeper_id: claims.sub,
     };
 
     let result = connection
-        .interact(move |connection| update_product_db(connection, &product_id, payload, &claims))
+        .interact(move |connection| {
+            update_product_db(connection, &product_id, payload, &claims.sub)
+        })
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -183,4 +206,26 @@ pub async fn update_product(
     }
 
     Ok((StatusCode::OK, "Product updated successfully".to_string()))
+}
+
+#[axum::debug_handler]
+pub async fn public_products(State(state): State<AppState>, Query(pages): Query<Pagination>) -> Result<Json<Vec<Product>>, String> {
+    let db = state
+        .db_pool
+        .get()
+        .await
+        .expect("Failed to fetch from the db");
+
+    let result = db
+        .interact(move |connection| handle_public_products(connection,pages.limit,pages.offset))
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
+
+     match result {
+        Ok(result) => result,
+        Err(e) => {
+            tracing::error!(?e, "Product operation failed");
+            Err("BAD_REQUEST".to_string())
+        }
+    }
 }

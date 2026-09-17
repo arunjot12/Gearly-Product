@@ -12,7 +12,7 @@ pub mod cors;
 pub mod product;
 pub mod schema;
 use crate::{
-   check::{health_check, print_startup_info}, auth::{auth::JwtService, middleware::auth_middleware}, cors::cors_allow, db::create_pool, product::api::{create_part, delete_product, get_product, get_products, update_product},
+   check::{health_check, print_startup_info}, auth::{auth::JwtService, middleware::auth_middleware}, cors::cors_allow, db::create_pool, product::api::{create_part, delete_product, get_product, get_products, public_products,update_product},
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -38,6 +38,7 @@ async fn main() {
         .route("/get_products", get(get_products))
         .route("/get_product/{id}", get(get_product))
         .route("/health",get(health_check))
+        .route("/products/public",get(public_products))
         .route("/delete_product/{id}", post(delete_product))
         .route("/update_product/{id}", put(update_product))
         .layer(middleware::from_fn_with_state(

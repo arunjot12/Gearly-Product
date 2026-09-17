@@ -58,6 +58,19 @@ pub fn handle_products(
     Ok(Json(products))
 }
 
+pub fn handle_public_products(
+    connection: &mut MysqlConnection,
+    limit: i64,
+    offset: i64,
+) -> Result<Json<Vec<Product>>, String> {
+    let products = products::table
+            .select(Product::as_select())
+            .limit(limit)
+            .offset(offset)
+            .load::<Product>(connection).map_err(|e| e.to_string())?;
+    Ok(Json(products))
+}
+
 pub fn handle_product(
     connection: &mut MysqlConnection,
     product_id: i32,
