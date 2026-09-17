@@ -1,28 +1,20 @@
 use axum::{
     Router, middleware,
     routing::{get, post, put},
-    serve,
-    Json
+    serve,    
 };
 use tokio::net::TcpListener;
 pub mod auth;
 pub mod db;
-use serde_json::{json,Value};
+pub mod check;
 pub mod model;
 pub mod cors;
 pub mod product;
 pub mod schema;
 use crate::{
-    auth::{auth::JwtService, middleware::auth_middleware}, cors::cors_allow, db::{DbPool, create_pool}, product::api::{create_part, delete_product, get_product, get_products, update_product},
+   check::{health_check, print_startup_info}, auth::{auth::JwtService, middleware::auth_middleware}, cors::cors_allow, db::create_pool, product::api::{create_part, delete_product, get_product, get_products, update_product},
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
-#[derive(Clone)]
-pub struct AppState {
-    db_pool: DbPool,
-    jwt_service: JwtService,
-}
-
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +29,7 @@ async fn main() {
     let jwt_service = JwtService::new(&jwt);
     let pool = create_pool();
 
-    let state = AppState {
+    let state = db::AppState {
         db_pool: pool,
         jwt_service: jwt_service,
     };
@@ -67,36 +59,4 @@ async fn main() {
     print_startup_info(port);
 
     serve(listener, app).await.unwrap();
-}
-
-pub fn print_startup_info(port: u16) {
-    println!();
-    println!("╔══════════════════════════════════════════════════════════╗");
-    println!("║                 📦  GEARLY PRODUCT API                   ║");
-    println!("║           Car Parts Marketplace Product Backend          ║");
-    println!("╚══════════════════════════════════════════════════════════╝");
-    println!();
-    println!("  ✓ Database       Connected");
-    println!("  ✓ JWT            Initialized");
-    println!("  ✓ Server         Ready");
-    println!();
-    println!("  Routes");
-    println!("  ────────────────────────────────────────────────────────");
-    println!("  POST   /create_product");
-    println!("  GET    /get_products");
-    println!("  GET    /get_product/:id");
-    println!("  PUT    /update_product/:id");
-    println!("  POST   /delete_product");
-    println!("  GET    /health");
-    println!();
-    println!("  🚀 Server running at http://127.0.0.1:{}", port);
-    println!();
-}
-
-#[axum::debug_handler]
-pub async fn health_check() -> Json<Value> {
-    Json(json!({
-        "status": "ready"
-    }
-    ))
 }

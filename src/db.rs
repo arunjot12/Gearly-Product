@@ -1,8 +1,15 @@
 use deadpool_diesel::mysql::{Manager, Pool};
 use dotenv::dotenv;
 use std::env;
+use crate::JwtService;
 
 pub type DbPool = Pool;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db_pool: DbPool,
+    pub jwt_service: JwtService,
+}
 
 pub fn create_pool() -> DbPool {
     dotenv().ok();

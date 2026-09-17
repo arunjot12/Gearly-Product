@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::db::AppState;
 use axum::extract::{Request, State};
 use axum::http::{StatusCode, header};
 use axum::middleware::Next;
