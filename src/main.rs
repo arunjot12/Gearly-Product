@@ -23,11 +23,6 @@ pub struct AppState {
     jwt_service: JwtService,
 }
 
-#[derive(serde::Deserialize)]
-pub struct Pagination{
-    limit: i64,
-    offset: i64
-}
 
 #[tokio::main]
 async fn main() {
@@ -48,7 +43,7 @@ async fn main() {
     };
     let app = Router::new()
         .route("/create_product", post(create_part))
-        .route("/get_products/", get(get_products))
+        .route("/get_products", get(get_products))
         .route("/get_product/{id}", get(get_product))
         .route("/health",get(health_check))
         .route("/delete_product/{id}", post(delete_product))

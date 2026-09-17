@@ -1,5 +1,5 @@
 use crate::{
-    AppState, Pagination, auth::auth::Claims, model::{NewProduct, NewProductRequest, Product, UpdateProduct, UpdateProductRequest}, product::handler::{
+    AppState, db::Pagination, auth::auth::Claims, model::{NewProduct, NewProductRequest, Product, UpdateProduct, UpdateProductRequest}, product::handler::{
         delete_product_db, handle_product, handle_product_insertion, handle_products,
         update_product_db,
     },
