@@ -33,20 +33,27 @@ async fn main() {
         db_pool: pool,
         jwt_service: jwt_service,
     };
-    let app = Router::new()
+    let protected_routes = Router::new()
         .route("/create_product", post(create_part))
         .route("/get_products", get(get_products))
         .route("/get_product/{id}", get(get_product))
-        .route("/health",get(health_check))
-        .route("/products/public",get(public_products))
         .route("/delete_product/{id}", post(delete_product))
         .route("/update_product/{id}", put(update_product))
-        .layer(middleware::from_fn_with_state(
+        .layer(middleware::from_fn_with_state( 
             state.clone(),
             auth_middleware,
-        ))
-        .layer(cors_allow())
-        .with_state(state);
+        ));
+
+    let public_routes = Router::new()
+        .route("/products/public",get(public_products))
+        .route("/health",get(health_check))
+        ;
+
+    let app = Router::new()
+    .merge(protected_routes)
+    .merge(public_routes)
+    .layer(cors_allow())
+    .with_state(state);
 
     let port: u16 = std::env::var("PORT")
         .ok()
