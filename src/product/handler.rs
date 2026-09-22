@@ -13,7 +13,7 @@ pub enum AppError {
     #[error("Part Number PartNumberAlreadyExits")]
     PartNumberAlreadyExits,
 
-    #[error("Database issue")]
+    #[error("Database issue :{0}")]
     Database(#[from] diesel::result::Error),
 }
 
