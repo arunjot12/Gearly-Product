@@ -1,4 +1,3 @@
--- Your SQL goes here
 -- up.sql
-ALTER TABLE products
-MODIFY COLUMN shopkeeper_id INT NOT NULL;
+-- No-op: shopkeeper_id and foreign key already created in 2026-09-15-092134
+SELECT 1;
